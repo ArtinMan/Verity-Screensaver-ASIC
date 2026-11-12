@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Your Name
+ * Copyright (c) 2024 AK
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -57,7 +57,6 @@ module vga_sync (
 
 endmodule
 
-// ===== END OF SECTION 1 — paste section 2 below this line =====
 // ------------------------------------------------------------
 // Bouncing smiley (16x16 bitmap, scaled 4x -> 64x64 pixels)
 // ------------------------------------------------------------
@@ -76,7 +75,7 @@ module smiley_bounce (
   localparam SIZE  = 64;
   localparam SPEED = 2;
 
-  // ---------------- Position / direction ----------------
+  // Position / direction 
   reg [9:0] x_pos, y_pos;
   reg       dx_right, dy_down;
   reg [2:0] color_idx;
@@ -118,13 +117,12 @@ module smiley_bounce (
       else
         y_pos <= y_pos - SPEED;
 
-      // Change color on any wall hit
+      // Change color when smiley hits a wall
       if (hit_right || hit_left || hit_down || hit_up)
         color_idx <= color_idx + 3'd1;
     end
   end
 
-// ===== END OF SECTION 2 (smiley_bounce is still open, no endmodule yet) =====
   // ---------------- Color palette (2 bits per channel) ----------------
   // Format: {R[1:0], G[1:0], B[1:0]}
   reg [5:0] face_color;
@@ -142,20 +140,19 @@ module smiley_bounce (
   end
 
   // ---------------- 16x16 bitmaps ----------------
-  // One 16-bit word per row. Bit 15 is the leftmost column.
 
-  // Round face outline (1 = face pixel)
+  // face outline
   function [15:0] face_row(input [3:0] r);
     case (r)
-      4'd0, 4'd15:                face_row = 16'h07E0; // ......######......
-      4'd1, 4'd14:                face_row = 16'h1FF8; // ...##########...
-      4'd2, 4'd13:                face_row = 16'h3FFC; // ..############..
-      4'd3, 4'd4, 4'd11, 4'd12:   face_row = 16'h7FFE; // .##############.
-      default:                    face_row = 16'hFFFF; // rows 5..10, full width
+      4'd0, 4'd15:                face_row = 16'h07E0;
+      4'd1, 4'd14:                face_row = 16'h1FF8; 
+      4'd2, 4'd13:                face_row = 16'h3FFC; 
+      4'd3, 4'd4, 4'd11, 4'd12:   face_row = 16'h7FFE; 
+      default:                    face_row = 16'hFFFF; 
     endcase
   endfunction
 
-  // Eyes and mouth (1 = drawn black on top of the face)
+  // Eyes and mouth 
   function [15:0] feature_row(input [3:0] r);
     case (r)
       4'd4, 4'd5: feature_row = 16'h0C30; // eyes (columns 4-5 and 10-11)
@@ -166,24 +163,19 @@ module smiley_bounce (
     endcase
   endfunction
 
-// ===== END OF SECTION 3 (smiley_bounce is still open, no endmodule yet) =====
   // ---------------- Drawing ----------------
-  // Is the current pixel inside the 64x64 sprite box?
   wire in_sprite = (x >= x_pos) && (x < x_pos + SIZE) &&
                    (y >= y_pos) && (y < y_pos + SIZE);
 
-  // Position inside the sprite, then divide by 4 to get the bitmap cell
   wire [9:0] lx  = x - x_pos;
   wire [9:0] ly  = y - y_pos;
   wire [3:0] col = lx[5:2];
   wire [3:0] row = ly[5:2];
 
-  // Put the function results in wires first, then pick one bit.
-  // (Verilog doesn't allow face_row(row)[n] directly.)
   wire [15:0] face_bits    = face_row(row);
   wire [15:0] feature_bits = feature_row(row);
 
-  // Bit 15 is the leftmost column, so flip the column index (~col == 15 - col)
+  // Bit 15 is the leftmost column
   wire [3:0] bit_idx    = ~col;
   wire       face_px    = face_bits[bit_idx];
   wire       feature_px = feature_bits[bit_idx];
@@ -197,7 +189,6 @@ module smiley_bounce (
 
 endmodule
 
-// ===== END OF SECTION 4 (smiley_bounce is now closed) =====
 // ------------------------------------------------------------
 // Tiny Tapeout top module (name and ports must stay as-is)
 // ------------------------------------------------------------
@@ -226,7 +217,7 @@ module tt_um_example (
       .y(y)
   );
 
-  // One-cycle pulse at the top-left of every frame (~60 Hz)
+  // One-cycle pulse at the top-left of every frame (Approximately 60 Hz)
   wire frame_tick = (x == 10'd0) && (y == 10'd0);
 
   smiley_bounce smiley (
